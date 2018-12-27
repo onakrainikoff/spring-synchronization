@@ -26,8 +26,9 @@ dependencies {
     compile ("org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE")
     compile "org.springframework.boot:spring-boot-starter-data-redis:2.0.6.RELEASE"
     compile "org.springframework.boot:spring-boot-starter-data-jpa:2.0.6.RELEASE"
-    compile "com.h2database:h2:+"
+    compile "org.hsqldb:hsqldb:2.4.1"
     compile 'com.github.kstyrc:embedded-redis:0.6'
+    compile 'com.google.guava:guava:27.0.1-jre'
     compile "org.redisson:redisson:3.9.0"
     testCompile "org.springframework.boot:spring-boot-starter-test:2.0.6.RELEASE"
     testCompile "org.spockframework:spock-core:1.1-groovy-2.4"

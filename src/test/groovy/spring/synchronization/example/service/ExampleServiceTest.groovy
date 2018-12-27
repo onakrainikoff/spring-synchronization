@@ -40,6 +40,10 @@ class ExampleServiceTest extends Specification {
         redisServer.stop()
     }
 
+    def cleanup(){
+        clientRepository.deleteAll()
+    }
+
 
     def "Test example1"() {
         given:
@@ -57,6 +61,7 @@ class ExampleServiceTest extends Specification {
         r5.get()
         then:
         thrown(ExecutionException)
+
     }
 
     def "Test example2"() {

@@ -1,6 +1,7 @@
 package spring.synchronization.example.service;
 
 
+import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -9,12 +10,14 @@ import org.springframework.stereotype.Service;
 import spring.synchronization.example.repository.Client;
 import spring.synchronization.example.repository.ClientRepository;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
- * Сервис, демострирующий различные варианты синхронизаций запросов
+ * Сервис, демонстрирующий различные варианты синхронизаций запросов
  *
  * @author uchonyy@gmail.com
  *
@@ -25,14 +28,14 @@ public class ExampleService {
     @Autowired
     private ClientRepository clientRepository;
     @Autowired
-    public RedissonClient redissonClient;
-    private static ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
+    private RedissonClient redissonClient;
+    private final ConcurrentMap<String, ReentrantLock> locks = CacheBuilder.newBuilder().concurrencyLevel(4).expireAfterWrite(Duration.ofSeconds(2)).<String, ReentrantLock>build().asMap();;
 
     /**
      *
      * Пример 1. Без синхронизации
      *
-     * в данном примере демоствриуется ситуация, когда несколько запросов (потоков)
+     * в данном примере демонстрирующий ситуация, когда несколько запросов (потоков)
      * одного клиента начнут создавать сущность Client и получат sql ошибку дубликации
      * т.к. поле clientId является unique
      *
@@ -50,7 +53,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 2. Полная синхронизации
+     * Пример 2. Полная синхронизация
      *
      * в данном примере создание сущности Client происходит после синхронизации;
      * но блокируются все запросы (потоки), которым нужно выполнить создание,
@@ -75,10 +78,10 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизации по clientId. Вариант 1.
+     * Пример 3. Синхронизация по clientId. Вариант 1.
      *
-     * в данном примере синхронизация запросов делается от конкретного клиента, не блокирую запросы остальных;
-     * для синхронизации используем конструкцию synchronized, передавая в нее в каестве обьекта id клиента
+     * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
+     * для синхронизации используем конструкцию synchronized, передавая в нее в качестве объекта id клиента,
      * который получаем из стандартного пула строк;
      *
      */
@@ -100,13 +103,13 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизации по clientId. Вариант 2.
+     * Пример 3. Синхронизация по clientId. Вариант 2.
      *
-     * в данном примере синхронизация запросов делается от конкретного клиента, не блокирую запросы остальных;
-     * для синхронизации используем ReentrantLock, получаемые из пула которым вычтупает ConcurrentHashMap;
+     * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
+     * для синхронизации используем ReentrantLock, получаемые из пула, которым вычтупает ConcurrentHashMap;
      *
      */
-    public void example4(String clientId, String requestId){
+    public void example4(String clientId, String requestId) throws ExecutionException {
         log.info("Начинаем обработку запроса requestId={} clientId={}", requestId, clientId);
         Client client = clientRepository.findByClientId(clientId);
         if(client == null){
@@ -128,9 +131,9 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизации по clientId. Вариант 3.
+     * Пример 3. Синхронизация по clientId. Вариант 3.
      *
-     * в данном примере синхронизация запросов делается от конкретного клиента, не блокирую запросы остальных
+     * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
      * для синхронизации используем Redisson, в кчачестве пула он использует redis;
      *
      */

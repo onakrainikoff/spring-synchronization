@@ -22,7 +22,7 @@ public class ApplicationConfiguration {
 
     /**
      *
-     * Конфигурация RedissonClient
+     * Конфигурация
      *
      */
     @Bean
