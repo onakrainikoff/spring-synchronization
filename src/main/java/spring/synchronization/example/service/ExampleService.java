@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import spring.synchronization.example.repository.Client;
 import spring.synchronization.example.repository.ClientRepository;
 
+import javax.transaction.Transactional;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -26,6 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class ExampleService {
     @Autowired
+    private ExampleService exampleService;
+    @Autowired
     private ClientRepository clientRepository;
     @Autowired
     private RedissonClient redissonClient;
@@ -33,7 +36,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 1. Без синхронизации
+     * Без синхронизации
      *
      * в данном примере демонстрирующий ситуация, когда несколько запросов (потоков)
      * одного клиента начнут создавать сущность Client и получат sql ошибку дубликации
@@ -53,7 +56,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 2. Полная синхронизация
+     * Полная синхронизация
      *
      * в данном примере создание сущности Client происходит после синхронизации;
      * но блокируются все запросы (потоки), которым нужно выполнить создание,
@@ -78,7 +81,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизация по clientId. Вариант 1.
+     * Синхронизация по clientId. Вариант 1.
      *
      * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
      * для синхронизации используем конструкцию synchronized, передавая в нее в качестве объекта id клиента,
@@ -103,7 +106,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизация по clientId. Вариант 2.
+     * Синхронизация по clientId. Вариант 2.
      *
      * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
      * для синхронизации используем ReentrantLock, получаемые из пула, которым вычтупает ConcurrentHashMap;
@@ -131,7 +134,7 @@ public class ExampleService {
 
     /**
      *
-     * Пример 3. Синхронизация по clientId. Вариант 3.
+     * Синхронизация по clientId. Вариант 3.
      *
      * в данном примере синхронизация запросов делается для конкретного клиента, не блокируя запросы остальных;
      * для синхронизации используем Redisson, в кчачестве пула он использует redis;
